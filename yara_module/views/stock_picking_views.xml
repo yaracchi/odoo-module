@@ -7,24 +7,10 @@
         <field name="inherit_id" ref="stock.view_picking_form"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='carrier_tracking_ref']/parent::div" position="after">
-                <field name="delivery_status" attrs="{'invisible':[('delivery_type', 'not in', ['nshift'])]}" />
+                <field name="delivery_status" />
             </xpath>
             
         </field>
     </record>    
 
-    <record id="stock_picking_delivery_address_form_view" model="ir.ui.view">
-        <field name="name">stock.picking.delivery.address</field>
-        <field name="model">stock.picking</field>
-        <field name="inherit_id" ref="stock.view_picking_form"/>
-        <field name="arch" type="xml">
-        
-         <!-- if a pickup location was selected then replace/add it to delivery view-->
-            <xpath expr="//field[@name='partner_id']" position="after">
-                <field name="pickup_office" attrs="{'invisible':[('pickup_office', '=', False)]}" />
-                <field name="pickup_address" attrs="{'invisible':[('pickup_address', '=', False)]}" />
-            </xpath>
-
-        </field>
-    </record> 
 </odoo>

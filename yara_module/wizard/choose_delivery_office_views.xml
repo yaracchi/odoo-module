@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo> 
+<!-- Create the wizard that shows the pickup locations list and allows to choose one -->
+    <record id="choose_delivery_office_wizard_view_form" model="ir.ui.view">
+        <field name="name">choose.delivery.office.wizard.form</field>
+        <field name="model">choose.delivery.office</field>
+        <field name="arch" type="xml">
+            <form string="Delivery Location">
+                <group>
+                    <field name="delivery_office_selection" /> 
+                </group>
+                <footer>
+                   <!--pass the selected pickup location to choose delivery carrier wizard -->   
+                   <button string="Confirm" name="button_confirm" context="{'default_office_selection': delivery_office_selection}"  type="object" class="oe_highlight"/>
+                   <button string="Discard" special="cancel" type="object" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_choose_delivery_office" model="ir.actions.act_window">
+        <field name="name">Choose Office Delivery</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">choose.delivery.office</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref = "choose_delivery_office_wizard_view_form"/>
+        <field name="target">new</field> <!--to have the wizard as a pop up-->
+    </record>  
+</odoo>

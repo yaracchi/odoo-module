@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo> 
+    <!-- add a button to create the view of 'choose delivery office' to show pickup locations -->
+    <record id="choose_carrier_pickup_view_form" model="ir.ui.view">
+        <field name="name">choose.carrier.pickup.form</field>
+        <field name="model">choose.delivery.carrier</field>
+        <field name="inherit_id" ref="delivery.choose_delivery_carrier_view_form"/>
+        <field name="arch" type="xml">
+        
+            <xpath expr="/form/group" position="after">
+                <!--<field name="office_id" invisible="1"/>-->
+                <group> 
+                    <div class="oe_left">                  
+                        <button name="%(yara_module.action_choose_delivery_office)d" string="Add Office" type="action"
+                            context= "{'default_carrier_id': carrier_id , 'default_order_id': order_id}" />         
+                        
+                    </div>
+                </group>
+            </xpath>
+        </field>
+    </record>   
+</odoo>
+ 

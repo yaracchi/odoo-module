@@ -6,7 +6,7 @@
     'license': 'AGPL-3',
     'summary': '',
     'description': """
-    Delivery status from nshift
+    Delivery status
     """,
     'author': "Yara",
     'website': '',
@@ -14,6 +14,8 @@
     'data': [
         'data/updatestatus.xml',
         'security/ir.model.access.csv',
+        'wizard/choose_delivery_office_views.xml',
+        'wizard/choose_delivery_carrier_views.xml',
         'views/stock_picking_views.xml',
         'views/sale_views.xml',             
     ],

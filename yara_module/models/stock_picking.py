@@ -2,7 +2,6 @@
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
 import logging
-import base64
 import json
 import urllib
 import time
@@ -32,10 +31,10 @@ class StockPicking(models.Model):
     def get_status_shipment(self):
 
         '''
-        Fetch information about delivery status connected to shipments.
+        Fetch information about delivery status connected to shipments from an external API.
+        Updates each delivery with its coresponding status.
         '''
 
-        #settings = request.env['nshift.settings'].search([('company_id', 'in', [self.env.user.company_id.id, False])], limit=1)    
         fetchId = 0
         done = False 
         base_url = 'https://api.unifaun.com/rs-extapi/v1'
@@ -44,35 +43,58 @@ class StockPicking(models.Model):
 
         opener = urllib.request.build_opener(BetterHTTPErrorProcessor)
         urllib.request.install_opener(opener)
-        #data_key = "%s:%s" % (settings.nshift_api_key, settings.nshift_secret_id)
-        #data_key = base64.b64encode(data_key.encode()).decode() 
         data_key = 'test'
 
         # Check if there are more alerts to fetch
         while(not done):
-            r = urllib.request.Request(
-                url=fetch_url,
-                data=None,
-                headers={
-                    'Authorization': 'Basic %s' % data_key,
-                }
-            )
-            u = urllib.request.urlopen(r)
-            response_http_status_code = u.getcode()
-            response = u.read().decode("utf-8")
-            print("http status code is %s" % str(response_http_status_code))
-            
-            if response_http_status_code == 401:
-                raise ValidationError(
-                    _('http code 401: Invalid or expired token.'))
-            if response_http_status_code == 403:
-                raise ValidationError(
-                    _('http code 403: The token is valid but it doesnt grant access to the operation attempted.'))
+            ################# This needs a valid data_key to work 
+            # r = urllib.request.Request(
+            #    url=fetch_url,
+            #    data=None,
+            #    headers={
+            #        'Authorization': 'Basic %s' % data_key,
+            #    }
+            #)
+            #u = urllib.request.urlopen(r)
+            #response_http_status_code = u.getcode()
+            #response = u.read().decode("utf-8")            
+            #if response_http_status_code == 401:
+            #    raise ValidationError(
+            #        _('http code 401: Invalid or expired token.'))
+            #if response_http_status_code == 403:
+            #    raise ValidationError(
+            #        _('http code 403: The token is valid but it doesnt grant access to the operation attempted.'))
             
             # parsing string to python object/dict 
-            response_dict = json.loads(response)
-            
-            #response_dict.update(json.loads(response))
+            #response_dict = json.loads(response)
+            #################
+
+            #test sample
+            response_dict={
+                "fetchId": "1",
+                "minDelay": 100,
+                "done": True,
+                "alerts": [{
+                    "alertCode": "STATUS_DELIVERED",
+                    "alertTime": "2015-06-03T13:18:30.000+0000",
+                    "alertCreated": "2015-06-03T13:18:30.000+0000",
+                    "alertInfo": "STATUS",
+                    "shipmentInfo": {
+                    "serviceId": "P15",
+                    "shipmentNo": 'null',
+                    "orderNo": "order number 123",
+                    "reference": "sender ref 234",
+                    "parcelCount": 1,
+                    "parcels": [{
+                        "parcelNo": "69563053713SE",
+                        "reference": 'null'
+                    }],
+                    "shipDate": "2015-06-03T13:18:30.000+0000",
+                    "printDate": "2015-06-03T13:18:30.904+0000"
+                    }
+                }]
+                }
+
             if response_dict['alerts']:
                 # Update alerts list
                 alerts.extend(response_dict['alerts'])
@@ -82,7 +104,7 @@ class StockPicking(models.Model):
             fetch_url = base_url + '/alerts?fetchId=%s'%(fetchId)
             done = response_dict['done']
 
-            # Wait for minDelay to make another call (required by nShift)
+            # Wait for minDelay to make another call 
             if (not response_dict['minDelay']*0.001 > 1):
                 time.sleep(response_dict['minDelay']*0.001)        
 
@@ -109,15 +131,18 @@ class StockPicking(models.Model):
         # Update the delivery status of the stock pickings using carrier_tracking_ref (parcelNo in alerts)
         if pickings_to_update:
                 # Stock stock pickings in a list with one query call
-                pickings = request.env['stock.picking'].sudo().search([('delivery_type', '=', 'nshift') ])
+                pickings = request.env['stock.picking'].sudo().search([])
                 for alert in pickings_to_update:
                     for picking in pickings: 
-                        if alert['shipmentInfo']['parcels'][0]['parcelNo'] ==  picking.carrier_tracking_ref :
-                            #  Update the stock picking delivery status 
-                            picking.write({
-                                'delivery_status':alert['alertCode']
+                        picking.write({
+                               'delivery_status':'test status updated'
                             })
+                        #if alert['shipmentInfo']['parcels'][0]['parcelNo'] ==  picking.carrier_tracking_ref :
+                            #  Update the stock picking delivery status 
+                           # picking.write({
+                               # 'delivery_status':alert['alertCode']
+                            #})
                             # Break from loop if found the searched picking
-                            break
+                           # break
 
         return pickings_to_update
